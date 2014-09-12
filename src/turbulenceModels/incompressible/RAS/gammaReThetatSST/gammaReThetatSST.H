@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | Unsupported Contributions for OpenFOAM
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 1991-2010 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2014 Felix Langfeldt
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is a derivative work of OpenFOAM.
 
     OpenFOAM is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
@@ -68,8 +68,8 @@ Description
                    SORENSEN (2009)
     2011-02-28 : - added missing max() in the return statement of the
                    F1 blending function
-		 - reverted ReThetac() to use original correlation of
-		   LANGTRY and MENTER
+         - reverted ReThetac() to use original correlation of
+           LANGTRY and MENTER
     2011-02-24 : - first public release
 
 
@@ -77,25 +77,25 @@ Description
     @verbatim
         gammaReThetatSSTCoeffs
         {
-		sigmaThetat     2;
-		ca1             2;
-		ce1             1;
-	        ca2             0.06;
-		ce2             50;
-		cThetat         0.03;
-		sigmaf          1;
-		s1              2;
-		alphaK1         0.85034;
-		alphaK2         1;
-		alphaOmega1     0.5;
-		alphaOmega2     0.85616;
-		gamma1          0.5532;
-		gamma2          0.4403;
-		beta1           0.075;
-		beta2           0.0828;
-		betaStar        0.09;
-		a1              0.31;
-		c1              10;
+        sigmaThetat     2;
+        ca1             2;
+        ce1             1;
+        ca2             0.06;
+        ce2             50;
+        cThetat         0.03;
+        sigmaf          1;
+        s1              2;
+        alphaK1         0.85034;
+        alphaK2         1;
+        alphaOmega1     0.5;
+        alphaOmega2     0.85616;
+        gamma1          0.5532;
+        gamma2          0.4403;
+        beta1           0.075;
+        beta2           0.0828;
+        betaStar        0.09;
+        a1              0.31;
+        c1              10;
         }
     @endverbatim
 
@@ -129,48 +129,48 @@ class gammaReThetatSST
 {
     // Private data
     
-	    // Convergence tolerance for calculating ReThetat
-	    // (not ReThetatTilda!!)
-	    static const scalar tol_;
-	    // Maximum iterations
-	    static const int maxIter_;
+        // Convergence tolerance for calculating ReThetat
+        // (not ReThetatTilda!!)
+        static const scalar tol_;
+        // Maximum iterations
+        static const int maxIter_;
                         
 
         // Model coefficients
-	
-	// gamma-ReThetat-model coefficients
-	
-	    dimensionedScalar ca1_;
-	    dimensionedScalar ce1_;
+    
+        // gamma-ReThetat-model coefficients
+    
+        dimensionedScalar ca1_;
+        dimensionedScalar ce1_;
 
-	    dimensionedScalar ca2_;
-	    dimensionedScalar ce2_;
+        dimensionedScalar ca2_;
+        dimensionedScalar ce2_;
 
-	    dimensionedScalar cThetat_;
+        dimensionedScalar cThetat_;
 
-	    dimensionedScalar sigmaf_;
-	    dimensionedScalar sigmaThetat_;
+        dimensionedScalar sigmaf_;
+        dimensionedScalar sigmaThetat_;
 
-	    dimensionedScalar s1_;
+        dimensionedScalar s1_;
 
-	// standard k-omega-SST coefficients
-	
-            dimensionedScalar alphaK1_;
-            dimensionedScalar alphaK2_;
+        // standard k-omega-SST coefficients
+    
+        dimensionedScalar alphaK1_;
+        dimensionedScalar alphaK2_;
 
-            dimensionedScalar alphaOmega1_;
-            dimensionedScalar alphaOmega2_;
+        dimensionedScalar alphaOmega1_;
+        dimensionedScalar alphaOmega2_;
 
-            dimensionedScalar gamma1_;
-            dimensionedScalar gamma2_;
+        dimensionedScalar gamma1_;
+        dimensionedScalar gamma2_;
 
-            dimensionedScalar beta1_;
-            dimensionedScalar beta2_;
+        dimensionedScalar beta1_;
+        dimensionedScalar beta2_;
 
-            dimensionedScalar betaStar_;
+        dimensionedScalar betaStar_;
 
-            dimensionedScalar a1_;
-            dimensionedScalar c1_;
+        dimensionedScalar a1_;
+        dimensionedScalar c1_;
 
 
         //- Wall distance field
@@ -179,36 +179,36 @@ class gammaReThetatSST
 
         // Fields
 
-            volScalarField gamma_;
-            volScalarField ReThetatTilda_;
-            volScalarField k_;
-            volScalarField omega_;
-            volScalarField nut_;
+        volScalarField gamma_;
+        volScalarField ReThetatTilda_;
+        volScalarField k_;
+        volScalarField omega_;
+        volScalarField nut_;
 
 
     // Private member functions
 
         // Empirical correlations
-	
-	volScalarField Flength() const;
-	volScalarField ReThetac() const;
+    
+        volScalarField Flength() const;
+        volScalarField ReThetac() const;
 
-	// Model functions of gamma-ReThetat-model
-	
-	tmp<volScalarField> Fonset() const;
-	tmp<volScalarField> Fonset1() const;
-	tmp<volScalarField> Fturb() const;
-	tmp<volScalarField> Freattach() const;
-	tmp<volScalarField> Fwake() const;
-	tmp<volScalarField> FThetat() const;
+        // Model functions of gamma-ReThetat-model
+    
+        tmp<volScalarField> Fonset() const;
+        tmp<volScalarField> Fonset1() const;
+        tmp<volScalarField> Fturb() const;
+        tmp<volScalarField> Freattach() const;
+        tmp<volScalarField> Fwake() const;
+        tmp<volScalarField> FThetat() const;
 
-	// Empirical Functions for calculating the local transition onset
-	// momentum thickness Reynolds number
-	void ReThetat(volScalarField& ReThetatField) const;
-	scalar ReThetatEq(scalar Tu, scalar lambda) const;
+        // Empirical Functions for calculating the local transition onset
+        // momentum thickness Reynolds number
+        void ReThetat(volScalarField& ReThetatField) const;
+        scalar ReThetatEq(scalar Tu, scalar lambda) const;
 
-	// Intermittency modification for separation-induced transition
-	tmp<volScalarField> gammaSep() const;
+        // Intermittency modification for separation-induced transition
+        tmp<volScalarField> gammaSep() const;
 
 
         tmp<volScalarField> F1(const volScalarField& CDkOmega) const;
@@ -271,8 +271,8 @@ public:
             const volVectorField& U,
             const surfaceScalarField& phi,
             transportModel& transport,
-	    const word& turbulenceModelName = turbulenceModel::typeName,
-	    const word& modelName = typeName
+            const word& turbulenceModelName = turbulenceModel::typeName,
+            const word& modelName = typeName
         );
 
 
@@ -377,7 +377,7 @@ public:
             );
         }
 
-	//- Return the Reynolds stress tensor
+    //- Return the Reynolds stress tensor
         virtual tmp<volSymmTensorField> R() const;
 
         //- Return the effective stress tensor including the laminar stress
