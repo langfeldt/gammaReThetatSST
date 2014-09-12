@@ -65,6 +65,8 @@ Description
     VERSION HISTORY:
     2014-11-12 : - coding style updates
                  - ensured compatibility with OpenFOAM 2.3.x (thanks Artur)
+                 - corrected correlations of SULUKSNA et al. (2009) and
+                   MALAN et al. (2009) (thanks Mazharul)
     2011-09-06 : - ensured compatibility with OpenFOAM 2.0.x
     2011-03-10 : - added ReThetac() and Flength() correlations of
                    SORENSEN (2009)

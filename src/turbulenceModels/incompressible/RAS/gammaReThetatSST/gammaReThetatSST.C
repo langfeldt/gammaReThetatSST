@@ -81,9 +81,16 @@ volScalarField gammaReThetatSST::Flength() const
 
     return (Flength*(scalar(1.0)-exp(-sqr(sqr(y_)*omega_/(0.4*500.0*nu()))))+40.0*exp(-sqr(sqr(y_)*omega_/(0.4*500.0*nu()))));
 
+    // CORRELATION: SULUKSNA et al. 2009
+    /*Flength = min(
+        scalar(0.1)*exp(scalar(-0.022)*ReThetatTilda_+scalar(12))+scalar(0.45),
+        scalar(300)
+    );
+    return Flength;*/
+
     // CORRELATION: MALAN et al. 2009
     /*Flength = min(
-        scalar(0.01)*exp(scalar(-0.022)*ReThetatTilda_+scalar(12))+scalar(0.57),
+        exp(scalar(-0.01173)*ReThetatTilda_+scalar(7.168))+scalar(0.7),
         scalar(300)
     );
     return Flength;*/
@@ -131,7 +138,7 @@ volScalarField gammaReThetatSST::ReThetac() const
 
     // CORRELATION: MALAN et al. 2009
     /*ReThetac = min(
-        scalar(0.625)*ReThetatTilda_+scalar(62),
+        scalar(0.615)*ReThetatTilda_+scalar(61.5),
         ReThetatTilda_
     );*/
 
