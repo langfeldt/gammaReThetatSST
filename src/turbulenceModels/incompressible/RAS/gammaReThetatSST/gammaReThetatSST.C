@@ -645,18 +645,34 @@ tmp<fvVectorMatrix> gammaReThetatSST::divDevReff(volVectorField& U) const
 }
 
 
+tmp<fvVectorMatrix> gammaReThetatSST::divDevRhoReff
+(
+    const volScalarField& rho,
+    volVectorField& U
+) const
+{
+    volScalarField muEff("muEff", rho*nuEff());
+
+    return
+    (
+      - fvm::laplacian(muEff, U)
+      - fvc::div(muEff*dev(T(fvc::grad(U))))
+    );
+}
+
+
 bool gammaReThetatSST::read()
 {
     if (RASModel::read())
     {
-    ca1_.readIfPresent(coeffDict());
-    ce1_.readIfPresent(coeffDict());
-    ca2_.readIfPresent(coeffDict());
-    ce2_.readIfPresent(coeffDict());
-    cThetat_.readIfPresent(coeffDict());
-    sigmaf_.readIfPresent(coeffDict());
-    sigmaThetat_.readIfPresent(coeffDict());
-    s1_.readIfPresent(coeffDict());
+        ca1_.readIfPresent(coeffDict());
+        ce1_.readIfPresent(coeffDict());
+        ca2_.readIfPresent(coeffDict());
+        ce2_.readIfPresent(coeffDict());
+        cThetat_.readIfPresent(coeffDict());
+        sigmaf_.readIfPresent(coeffDict());
+        sigmaThetat_.readIfPresent(coeffDict());
+        s1_.readIfPresent(coeffDict());
         alphaK1_.readIfPresent(coeffDict());
         alphaK2_.readIfPresent(coeffDict());
         alphaOmega1_.readIfPresent(coeffDict());
@@ -693,7 +709,7 @@ void gammaReThetatSST::correct()
     }
 
     volScalarField S2 = magSqr(symm(fvc::grad(U_)));
-    volScalarField G("RASModel::G", nut_*2*S2);
+    volScalarField G(GName(), nut_*2*S2);
 
     // Update omega and G at the wall
     omega_.boundaryField().updateCoeffs();

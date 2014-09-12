@@ -63,13 +63,15 @@ Description
 
 
     VERSION HISTORY:
+    2014-11-12 : - coding style updates
+                 - ensured compatibility with OpenFOAM 2.3.x (thanks Artur)
     2011-09-06 : - ensured compatibility with OpenFOAM 2.0.x
     2011-03-10 : - added ReThetac() and Flength() correlations of
                    SORENSEN (2009)
     2011-02-28 : - added missing max() in the return statement of the
                    F1 blending function
-         - reverted ReThetac() to use original correlation of
-           LANGTRY and MENTER
+                 - reverted ReThetac() to use original correlation of
+                   LANGTRY and MENTER
     2011-02-24 : - first public release
 
 
@@ -385,6 +387,13 @@ public:
 
         //- Return the source term for the momentum equation
         virtual tmp<fvVectorMatrix> divDevReff(volVectorField& U) const;
+
+        //- Return the source term for the momentum equation
+        virtual tmp<fvVectorMatrix> divDevRhoReff
+        (
+            const volScalarField& rho,
+            volVectorField& U
+        ) const;
 
         //- Solve the turbulence equations and correct the turbulence viscosity
         virtual void correct();
