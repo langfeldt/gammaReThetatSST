@@ -148,16 +148,6 @@ volScalarField gammaReThetatSST::ReThetac() const
            (scalar(1)-tanh(pow4((ReThetatTilda_-scalar(100))/scalar(400))))*
            (scalar(7)*ReThetatTilda_+scalar(100))/scalar(10);*/
 
-    // CORRELATION: corrected (to be tested!)
-    /*forAll(ReThetac, cellI)
-    {
-        if(ReThetatTilda_[cellI] > scalar(1870))
-            ReThetac[cellI] = ReThetatTilda_[cellI]-(scalar(593.11)+(ReThetatTilda_[cellI]-scalar(1870.0))*scalar(0.482));
-        else
-            ReThetac[cellI] = min(ReThetatTilda_[cellI]-(scalar(0)+scalar(-0.0604759)*ReThetatTilda_[cellI]+scalar(0.000989404)*sqr(ReThetatTilda_[cellI])+scalar(-7.86728e-07)*pow3(ReThetatTilda_[cellI])+scalar(1.95524e-10)*pow4(ReThetatTilda_[cellI])),ReThetatTilda_[cellI]);
-    }*/
-    
-
     return ReThetac;
     
 }
