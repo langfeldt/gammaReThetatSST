@@ -721,10 +721,10 @@ void gammaReThetatSST::correct()
     (
         fvm::ddt(omega_)
       + fvm::div(phi_, omega_)
-      - fvm::Sp(fvc::div(phi_), omega_)
       - fvm::laplacian(DomegaEff(F1), omega_)
      ==
-        gamma(F1)*2*S2
+        gamma(F1)
+       *min(2*S2, (c1_/a1_)*betaStar_*omega_*max(a1_*omega_, F2()*sqrt(scalar(2)*S2)))
       - fvm::Sp(beta(F1)*omega_, omega_)
       - fvm::SuSp
         (
@@ -752,7 +752,6 @@ void gammaReThetatSST::correct()
     (
         fvm::ddt(k_)
       + fvm::div(phi_, k_)
-      - fvm::Sp(fvc::div(phi_), k_)
       - fvm::laplacian(DkEff(F1), k_)
      ==
         min(G, c1_*betaStar_*k_*omega_)*gammaEff
@@ -812,7 +811,6 @@ void gammaReThetatSST::correct()
     (
         fvm::ddt(ReThetatTilda_)
       + fvm::div(phi_, ReThetatTilda_)
-      - fvm::Sp(fvc::div(phi_), ReThetatTilda_)
       - fvm::laplacian(DReThetatTildaEff(), ReThetatTilda_)
      ==
         cThetat_*magSqr(U_)*(scalar(1.0)-FThetat())*ReThetatField/(scalar(500.0)*nu())
@@ -831,7 +829,6 @@ void gammaReThetatSST::correct()
     (
         fvm::ddt(gamma_)
       + fvm::div(phi_, gamma_)
-      - fvm::Sp(fvc::div(phi_), gamma_)
       - fvm::laplacian(DgammaEff(), gamma_)
      ==
         Flength()*ca1_*sqrt(scalar(2))*mag(symm(fvc::grad(U_)))*sqrt(Fonset()*gamma_)
