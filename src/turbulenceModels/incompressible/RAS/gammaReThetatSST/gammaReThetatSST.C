@@ -89,7 +89,7 @@ volScalarField gammaReThetatSST::Flength() const
 
     // CORRELATION: MALAN et al. 2009
     /*Flength = min(
-        exp(scalar(-0.01173)*ReThetatTilda_+scalar(7.168))+scalar(0.7),
+        exp(scalar(-0.01173)*ReThetatTilda_+scalar(7.168))+scalar(0.5),
         scalar(300)
     );*/
 
