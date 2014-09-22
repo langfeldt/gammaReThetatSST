@@ -49,6 +49,16 @@ addToRunTimeSelectionTable(RASModel, gammaReThetatSST, dictionary);
 const scalar gammaReThetatSST::tol_ = 1.0e-4;
 const int gammaReThetatSST::maxIter_ = 100;
 
+// Selectable correlation IDs
+const int gammaReThetatSST::CORR_MENTER2009 = 0;
+const int gammaReThetatSST::CORR_SULUKSNA2009 = 1;
+const int gammaReThetatSST::CORR_MALAN2009 = 2;
+const int gammaReThetatSST::CORR_SORENSEN2009 = 3;
+
+// Selected correlations
+const int gammaReThetatSST::corrID_ = gammaReThetatSST::CORR_MENTER2009;
+
+
 // * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
 
 volScalarField gammaReThetatSST::Flength() const
@@ -66,38 +76,44 @@ volScalarField gammaReThetatSST::Flength() const
             ReThetatTilda_ 
     );
 
-    // CORRELATION: LANGTRY and MENTER 2009 
-    forAll(Flength, cellI)
-    {
-        if(ReThetatTilda_[cellI] < scalar(400))
-            Flength[cellI] = scalar(398.189e-1)-scalar(119.270e-4)*ReThetatTilda_[cellI]-scalar(132.567e-6)*sqr(ReThetatTilda_[cellI]);
-        else if(ReThetatTilda_[cellI] < scalar(596))
-            Flength[cellI] = scalar(263.404)-scalar(123.939e-2)*ReThetatTilda_[cellI]+scalar(194.548e-5)*sqr(ReThetatTilda_[cellI])-scalar(101.695e-8)*pow3(ReThetatTilda_[cellI]);
-        else if(ReThetatTilda_[cellI] < scalar(1200))
-            Flength[cellI] = scalar(0.5)-(ReThetatTilda_[cellI]-scalar(596.0))*scalar(3e-4);
-        else
-            Flength[cellI] = scalar(0.3188);
+    switch (corrID_) {
+        case CORR_SULUKSNA2009:
+            // CORRELATION: SULUKSNA et al. 2009
+            Flength = min(
+                scalar(0.1)*exp(scalar(-0.022)*ReThetatTilda_+scalar(12))+scalar(0.45),
+                scalar(300)
+            );
+            break;
+        case CORR_MALAN2009:
+            // CORRELATION: MALAN et al. 2009
+            Flength = min(
+                exp(scalar(-0.01173)*ReThetatTilda_+scalar(7.168))+scalar(0.5),
+                scalar(300)
+            );
+            break;
+        case CORR_SORENSEN2009: 
+            // CORRELATION: SORENSEN 2009
+            Flength = min(
+                scalar(150)*exp(scalar(-1)*pow(ReThetatTilda_/scalar(120),1.2))+scalar(0.1),
+                scalar(30)
+            );
+            break;
+        default:
+            // CORRELATION: LANGTRY and MENTER 2009 
+            forAll(Flength, cellI)
+            {
+                if(ReThetatTilda_[cellI] < scalar(400))
+                    Flength[cellI] = scalar(398.189e-1)-scalar(119.270e-4)*ReThetatTilda_[cellI]-scalar(132.567e-6)*sqr(ReThetatTilda_[cellI]);
+                else if(ReThetatTilda_[cellI] < scalar(596))
+                    Flength[cellI] = scalar(263.404)-scalar(123.939e-2)*ReThetatTilda_[cellI]+scalar(194.548e-5)*sqr(ReThetatTilda_[cellI])-scalar(101.695e-8)*pow3(ReThetatTilda_[cellI]);
+                else if(ReThetatTilda_[cellI] < scalar(1200))
+                    Flength[cellI] = scalar(0.5)-(ReThetatTilda_[cellI]-scalar(596.0))*scalar(3e-4);
+                else
+                    Flength[cellI] = scalar(0.3188);
+            }
+
+            Flength = (Flength*(scalar(1.0)-exp(-sqr(sqr(y_)*omega_/(0.4*500.0*nu()))))+40.0*exp(-sqr(sqr(y_)*omega_/(0.4*500.0*nu()))));
     }
-
-    Flength = (Flength*(scalar(1.0)-exp(-sqr(sqr(y_)*omega_/(0.4*500.0*nu()))))+40.0*exp(-sqr(sqr(y_)*omega_/(0.4*500.0*nu()))));
-
-    // CORRELATION: SULUKSNA et al. 2009
-    /*Flength = min(
-        scalar(0.1)*exp(scalar(-0.022)*ReThetatTilda_+scalar(12))+scalar(0.45),
-        scalar(300)
-    );*/
-
-    // CORRELATION: MALAN et al. 2009
-    /*Flength = min(
-        exp(scalar(-0.01173)*ReThetatTilda_+scalar(7.168))+scalar(0.5),
-        scalar(300)
-    );*/
-
-    // CORRELATION: SORENSEN 2009
-    /*Flength = min(
-        scalar(150)*exp(scalar(-1)*pow(ReThetatTilda_/scalar(120),1.2))+scalar(0.1),
-        scalar(30)
-    );*/
 
     return Flength;
 }
@@ -117,36 +133,42 @@ volScalarField gammaReThetatSST::ReThetac() const
             ReThetatTilda_ 
     );
 
-    // CORRELATION: LANGTRY and MENTER 2009 
-    forAll(ReThetac, cellI)
-    {
-        if(ReThetatTilda_[cellI] > scalar(1870))
-            ReThetac[cellI] = ReThetatTilda_[cellI]-(scalar(593.11)+(ReThetatTilda_[cellI]-scalar(1870.0))*scalar(0.482));
-        else
-            ReThetac[cellI] = ReThetatTilda_[cellI]-(scalar(396.035e-2)-scalar(120.656e-4)*ReThetatTilda_[cellI]+scalar(868.230e-6)*sqr(ReThetatTilda_[cellI])-scalar(696.506e-9)*pow3(ReThetatTilda_[cellI])+scalar(174.105e-12)*pow4(ReThetatTilda_[cellI]));
+    switch (corrID_) {
+        case CORR_SULUKSNA2009:
+            // CORRELATION: SULUKSNA et al. 2009
+            ReThetac = min(
+                max(
+                scalar(1.47)*ReThetatTilda_-sqr(scalar(0.025)*ReThetatTilda_)-scalar(120),
+                scalar(125)
+                ),
+                ReThetatTilda_
+            );
+            break;
+        case CORR_MALAN2009:
+            // CORRELATION: MALAN et al. 2009
+            ReThetac = min(
+                scalar(0.615)*ReThetatTilda_+scalar(61.5),
+                ReThetatTilda_
+            );
+            break;
+        case CORR_SORENSEN2009: 
+            // CORRELATION: SORENSEN 2009
+            ReThetac = tanh(pow4((ReThetatTilda_-scalar(100))/scalar(400)))*
+                   (ReThetatTilda_+scalar(12000))/scalar(25)+
+                   (scalar(1)-tanh(pow4((ReThetatTilda_-scalar(100))/scalar(400))))*
+                   (scalar(7)*ReThetatTilda_+scalar(100))/scalar(10);
+            break;
+        default:
+            // CORRELATION: LANGTRY and MENTER 2009 
+            forAll(ReThetac, cellI)
+            {
+                if(ReThetatTilda_[cellI] > scalar(1870))
+                    ReThetac[cellI] = ReThetatTilda_[cellI]-(scalar(593.11)+(ReThetatTilda_[cellI]-scalar(1870.0))*scalar(0.482));
+                else
+                    ReThetac[cellI] = ReThetatTilda_[cellI]-(scalar(396.035e-2)-scalar(120.656e-4)*ReThetatTilda_[cellI]+scalar(868.230e-6)*sqr(ReThetatTilda_[cellI])-scalar(696.506e-9)*pow3(ReThetatTilda_[cellI])+scalar(174.105e-12)*pow4(ReThetatTilda_[cellI]));
+            }
     }
-
-    // CORRELATION: SULUKSNA et al. 2009
-    /*ReThetac = min(
-        max(
-        scalar(1.47)*ReThetatTilda_-sqr(scalar(0.025)*ReThetatTilda_)-scalar(120),
-        scalar(125)
-        ),
-        ReThetatTilda_
-    );*/
-
-    // CORRELATION: MALAN et al. 2009
-    /*ReThetac = min(
-        scalar(0.615)*ReThetatTilda_+scalar(61.5),
-        ReThetatTilda_
-    );*/
-
-    // CORRELATION: SORENSEN 2009
-    /*ReThetac = tanh(pow4((ReThetatTilda_-scalar(100))/scalar(400)))*
-           (ReThetatTilda_+scalar(12000))/scalar(25)+
-           (scalar(1)-tanh(pow4((ReThetatTilda_-scalar(100))/scalar(400))))*
-           (scalar(7)*ReThetatTilda_+scalar(100))/scalar(10);*/
-
+    
     return ReThetac;
     
 }
@@ -215,7 +237,7 @@ tmp<volScalarField> gammaReThetatSST::FThetat() const
 // pressure gradient influence on ReThetat (to be tested!)
 void gammaReThetatSST::ReThetat(volScalarField& ReThetatField) const
 {
-    scalar Tu, lambda, ReThetatOld, ReThetatNew, ReThetatTol, dUds;
+    scalar Tu, lambda, ReThetatOld, ReThetatNew, ReThetatTol, dUds, K;
     volScalarField U2gradU = (sqr(U_)&&(fvc::grad(U_)));
 
     forAll(ReThetatField, cellI)
@@ -229,7 +251,7 @@ void gammaReThetatSST::ReThetat(volScalarField& ReThetatField) const
         dUds = U2gradU[cellI]/(sqr(max(mag(U_[cellI]),SMALL)));
 
         // Starting value
-        ReThetatNew = max(ReThetatEq(Tu, scalar(0)),scalar(20.0));
+        ReThetatNew = max(ReThetatEq(Tu, scalar(0), scalar(0)),scalar(20.0));
         ReThetatTol = ReThetatNew*tol_;
 
         do
@@ -242,7 +264,14 @@ void gammaReThetatSST::ReThetat(volScalarField& ReThetatField) const
                 ),
                 scalar(-0.1)
             );
-            ReThetatNew = max(ReThetatEq(Tu, lambda),scalar(20.0));
+            K = max(
+                    min(
+                    nu()()[cellI]*dUds/(sqr(max(mag(U_[cellI]),SMALL))),
+                scalar(3e-6)
+                ),
+                scalar(-3e-6)
+            );
+            ReThetatNew = max(ReThetatEq(Tu, lambda, K),scalar(20.0));
 
             if (iter++ > maxIter_)
             {
@@ -259,18 +288,40 @@ void gammaReThetatSST::ReThetat(volScalarField& ReThetatField) const
 
 }
 
-scalar gammaReThetatSST::ReThetatEq(scalar Tu, scalar lambda) const
+scalar gammaReThetatSST::ReThetatEq(scalar Tu, scalar lambda, scalar K) const
 {
     scalar FTu;
-    if(Tu > scalar(1.3))
-        FTu = scalar(331.5)*pow((Tu-scalar(0.5658)),scalar(-0.671));
-    else
-        FTu = scalar(1173.51)-scalar(589.428)*Tu+scalar(0.2196)/sqr(Tu);
-    if(lambda > scalar(0))
-        return FTu*(scalar(1.0)+scalar(0.275)*(scalar(1.0)-exp(scalar(-35.0)*lambda))*exp(scalar(-2.0)*Tu));
-    else
-        return FTu*(scalar(1.0)+(scalar(12.986)*lambda+scalar(123.66)*sqr(lambda)+scalar(405.689)*pow3(lambda))*exp(-pow((Tu/scalar(1.5)),scalar(1.5))));
-
+    scalar FlamK;
+    switch (corrID_) {
+        case CORR_SULUKSNA2009:
+        case CORR_SORENSEN2009:
+            // "OLD" CORRELATION FROM MENTER ET AL. (2004)
+            FTu = scalar(803.73)*pow((Tu+scalar(0.6067)),scalar(-1.027));
+            if(lambda > scalar(0)) {
+                scalar FK = scalar(0.0962e6)*K+scalar(0.148e12)*sqr(K)+scalar(0.0141e18)*pow3(K);
+                FlamK = scalar(1.0)+FK*(scalar(1.0)-exp(-Tu/scalar(1.5)))+scalar(0.556)*(scalar(1.0)-exp(-scalar(23.9)*lambda))*exp(-Tu/scalar(1.5)); 
+            }
+            else {
+                scalar Flam = scalar(10.32)*lambda+scalar(89.47)*sqr(lambda)+265.51*pow3(lambda);
+                FlamK = scalar(1.0)+Flam*exp(-Tu/scalar(3.0));
+            }
+            break;
+        default:
+            // "NEW" CORRELATION FROM LANGTRY/MENTER (2009)
+            if(Tu > scalar(1.3)) {
+                FTu = scalar(331.5)*pow((Tu-scalar(0.5658)),scalar(-0.671));
+            }
+            else {
+                FTu = scalar(1173.51)-scalar(589.428)*Tu+scalar(0.2196)/sqr(Tu);
+            }
+            if(lambda > scalar(0)) {
+                FlamK = (scalar(1.0)+scalar(0.275)*(scalar(1.0)-exp(scalar(-35.0)*lambda))*exp(scalar(-2.0)*Tu));
+            }
+            else {
+                FlamK = (scalar(1.0)+(scalar(12.986)*lambda+scalar(123.66)*sqr(lambda)+scalar(405.689)*pow3(lambda))*exp(-pow((Tu/scalar(1.5)),scalar(1.5))));
+            }
+    }
+    return FTu*FlamK;
 }
 
 tmp<volScalarField> gammaReThetatSST::gammaSep() const

@@ -63,7 +63,11 @@ Description
 
 
     VERSION HISTORY:
-    2014-11-12 : - coding style updates
+    2014-09-22 : - introduced correlation selection using option variables
+                   before compilation
+    2014-09-19 : - corrected typo in correlation by MALAN et al. (2009)
+    2014-09-17 : - made equations consistent with SST model in OpenFOAM 2.3.x
+    2014-09-12 : - coding style updates
                  - ensured compatibility with OpenFOAM 2.3.x (thanks Artur)
                  - corrected correlations of SULUKSNA et al. (2009) and
                    MALAN et al. (2009) (thanks Mazharul)
@@ -138,7 +142,15 @@ class gammaReThetatSST
         static const scalar tol_;
         // Maximum iterations
         static const int maxIter_;
-                        
+
+        // Correlation IDs
+        static const int CORR_MENTER2009;
+        static const int CORR_SULUKSNA2009;
+        static const int CORR_MALAN2009;
+        static const int CORR_SORENSEN2009;
+        
+        // Selected Correlation ID        
+        static const int corrID_;
 
         // Model coefficients
     
@@ -209,7 +221,7 @@ class gammaReThetatSST
         // Empirical Functions for calculating the local transition onset
         // momentum thickness Reynolds number
         void ReThetat(volScalarField& ReThetatField) const;
-        scalar ReThetatEq(scalar Tu, scalar lambda) const;
+        scalar ReThetatEq(scalar Tu, scalar lambda, scalar K) const;
 
         // Intermittency modification for separation-induced transition
         tmp<volScalarField> gammaSep() const;
