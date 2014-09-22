@@ -49,15 +49,17 @@ addToRunTimeSelectionTable(RASModel, gammaReThetatSST, dictionary);
 const scalar gammaReThetatSST::tol_ = 1.0e-4;
 const int gammaReThetatSST::maxIter_ = 100;
 
+// Selectable correlation names
+const word gammaReThetatSST::CORRN_MENTER2009 = "LangtryMenter2009";
+const word gammaReThetatSST::CORRN_SULUKSNA2009 = "SuluksnaEtAl2009";
+const word gammaReThetatSST::CORRN_MALAN2009 = "MalanEtAl2009";
+const word gammaReThetatSST::CORRN_SORENSEN2009 = "Sorensen2009";
+
 // Selectable correlation IDs
 const int gammaReThetatSST::CORR_MENTER2009 = 0;
 const int gammaReThetatSST::CORR_SULUKSNA2009 = 1;
 const int gammaReThetatSST::CORR_MALAN2009 = 2;
 const int gammaReThetatSST::CORR_SORENSEN2009 = 3;
-
-// Selected correlations
-const int gammaReThetatSST::corrID_ = gammaReThetatSST::CORR_MENTER2009;
-
 
 // * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
 
@@ -631,6 +633,44 @@ gammaReThetatSST::gammaReThetatSST
         autoCreateNut("nut", mesh_)
     )
 {
+    // get correlations name, but do not register the dictionary
+    // otherwise it is registered in the database twice
+    const word corrName
+    (
+        IOdictionary
+        (
+            IOobject
+            (
+                "RASProperties",
+                U.time().constant(),
+                U.db(),
+                IOobject::MUST_READ_IF_MODIFIED,
+                IOobject::NO_WRITE,
+                false
+            )
+        ).lookupOrDefault("gammaReThetatSSTCorrelations",CORRN_MENTER2009)
+    );
+
+    // set selected correlation ID
+    word corrInfo;
+    if (corrName == CORRN_SULUKSNA2009) {
+        corrID_ = CORR_SULUKSNA2009;
+        corrInfo = "Suluksna et al. (2009)";
+    }
+    else if (corrName == CORRN_MALAN2009) {
+        corrID_ = CORR_MALAN2009;
+        corrInfo = "Malan et al. (2009)";
+    }
+    else if (corrName == CORRN_SORENSEN2009) {
+        corrID_ = CORR_SORENSEN2009;
+        corrInfo = "Sorensen (2009)";
+    }
+    else {
+        corrID_ = CORR_MENTER2009;
+        corrInfo = "Langtry and Menter (2009)";
+    }
+
+    Info << "Using gammaReThetat-correlations by " << corrInfo << endl;
 
     nut_ = a1_*k_/max(a1_*omega_, F2()*sqrt(scalar(2))*mag(symm(fvc::grad(U_))));
     nut_.correctBoundaryConditions();

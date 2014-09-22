@@ -1,0 +1,30 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.3.x                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      RASProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+RASModel                        gammaReThetatSST;
+gammaReThetatSSTCorrelations    LangtryMenter2009; // Allowed correlations:
+                                                   //  - LangtryMenter2009
+                                                   //  - SuluksnaEtAl2009
+                                                   //  - MalanEtAl2009
+                                                   //  - Sorensen2009
+
+turbulence                      on;
+
+printCoeffs                     on;
+
+
+// ************************************************************************* //

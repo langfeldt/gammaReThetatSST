@@ -63,8 +63,7 @@ Description
 
 
     VERSION HISTORY:
-    2014-09-22 : - introduced correlation selection using option variables
-                   before compilation
+    2014-09-22 : - add correlation selection in RASProperties dictionary
     2014-09-19 : - corrected typo in correlation by MALAN et al. (2009)
     2014-09-17 : - made equations consistent with SST model in OpenFOAM 2.3.x
     2014-09-12 : - coding style updates
@@ -143,6 +142,12 @@ class gammaReThetatSST
         // Maximum iterations
         static const int maxIter_;
 
+        // Correlation names
+        static const word CORRN_MENTER2009;
+        static const word CORRN_SULUKSNA2009;
+        static const word CORRN_MALAN2009;
+        static const word CORRN_SORENSEN2009;
+
         // Correlation IDs
         static const int CORR_MENTER2009;
         static const int CORR_SULUKSNA2009;
@@ -150,7 +155,7 @@ class gammaReThetatSST
         static const int CORR_SORENSEN2009;
         
         // Selected Correlation ID        
-        static const int corrID_;
+        int corrID_;
 
         // Model coefficients
     
