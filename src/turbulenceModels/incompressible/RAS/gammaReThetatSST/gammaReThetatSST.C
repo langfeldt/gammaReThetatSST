@@ -681,6 +681,11 @@ gammaReThetatSST::gammaReThetatSST
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+scalar gammaReThetatSST::ReThetatTildaInlet(scalar Tu) const
+{
+    return ReThetatEq(Tu,scalar(0),scalar(0));
+}
+
 tmp<volSymmTensorField> gammaReThetatSST::R() const
 {
     return tmp<volSymmTensorField>

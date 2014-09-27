@@ -63,6 +63,7 @@ Description
 
 
     VERSION HISTORY:
+    2014-09-27 : - add inlet boundary condition for ReThetatTilda
     2014-09-22 : - add correlation selection in RASProperties dictionary
     2014-09-19 : - corrected typo in correlation by MALAN et al. (2009)
     2014-09-17 : - made equations consistent with SST model in OpenFOAM 2.3.x
@@ -398,7 +399,10 @@ public:
             );
         }
 
-    //- Return the Reynolds stress tensor
+        //- Return inlet values for ReThetatTilda
+        virtual scalar ReThetatTildaInlet(scalar Tu) const;
+
+        //- Return the Reynolds stress tensor
         virtual tmp<volSymmTensorField> R() const;
 
         //- Return the effective stress tensor including the laminar stress
