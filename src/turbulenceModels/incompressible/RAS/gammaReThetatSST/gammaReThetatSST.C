@@ -256,34 +256,36 @@ void gammaReThetatSST::ReThetat(volScalarField& ReThetatField) const
         ReThetatNew = max(ReThetatEq(Tu, scalar(0), scalar(0)),scalar(20.0));
         ReThetatTol = ReThetatNew*tol_;
 
-        do
-        {
-            ReThetatOld = ReThetatNew;
-            lambda = max(
-                    min(
-                    sqr(ReThetatOld)*nu()()[cellI]*dUds/(sqr(max(mag(U_[cellI]),SMALL))),
-                scalar(0.1)
-                ),
-                scalar(-0.1)
-            );
-            K = max(
-                    min(
-                    nu()()[cellI]*dUds/(sqr(max(mag(U_[cellI]),SMALL))),
-                scalar(3e-6)
-                ),
-                scalar(-3e-6)
-            );
-            ReThetatNew = max(ReThetatEq(Tu, lambda, K),scalar(20.0));
-
-            if (iter++ > maxIter_)
+        if (dUds_) {
+            do
             {
-                FatalErrorIn
-                (
-                     "gammaReThetatSST::ReThetat(volScalarField& ReThetatField) const"
-                )   << "Maximum number of iterations exceeded"
-                    << abort(FatalError);
-            }
-        } while(mag(ReThetatNew-ReThetatOld) > ReThetatTol);
+                ReThetatOld = ReThetatNew;
+                lambda = max(
+                        min(
+                        sqr(ReThetatOld)*nu()()[cellI]*dUds/(sqr(max(mag(U_[cellI]),SMALL))),
+                    scalar(0.1)
+                    ),
+                    scalar(-0.1)
+                );
+                K = max(
+                        min(
+                        nu()()[cellI]*dUds/(sqr(max(mag(U_[cellI]),SMALL))),
+                    scalar(3e-6)
+                    ),
+                    scalar(-3e-6)
+                );
+                ReThetatNew = max(ReThetatEq(Tu, lambda, K),scalar(20.0));
+
+                if (iter++ > maxIter_)
+                {
+                    FatalErrorIn
+                    (
+                         "gammaReThetatSST::ReThetat(volScalarField& ReThetatField) const"
+                    )   << "Maximum number of iterations exceeded"
+                        << abort(FatalError);
+                }
+            } while(mag(ReThetatNew-ReThetatOld) > ReThetatTol);
+        }
 
         ReThetatField[cellI] = ReThetatNew;
     }
@@ -468,6 +470,15 @@ gammaReThetatSST::gammaReThetatSST
             "s1",
             coeffDict_,
             2.0
+        )
+    ),
+    dUds_
+    (
+        Switch::lookupOrAddToDict
+        (
+            "dUds",
+            coeffDict_,
+            true
         )
     ),
     alphaK1_
@@ -765,6 +776,7 @@ bool gammaReThetatSST::read()
         sigmaf_.readIfPresent(coeffDict());
         sigmaThetat_.readIfPresent(coeffDict());
         s1_.readIfPresent(coeffDict());
+        dUds_.readIfPresent("dUds",coeffDict());
         alphaK1_.readIfPresent(coeffDict());
         alphaK2_.readIfPresent(coeffDict());
         alphaOmega1_.readIfPresent(coeffDict());

@@ -63,6 +63,8 @@ Description
 
 
     VERSION HISTORY:
+    2014-10-06 : - add switch for controlling the influence of a streamwise
+                   pressure gradient on ReThetat
     2014-09-27 : - add inlet boundary condition for ReThetatTilda
     2014-09-22 : - add correlation selection in RASProperties dictionary
     2014-09-19 : - corrected typo in correlation by MALAN et al. (2009)
@@ -93,6 +95,7 @@ Description
         cThetat         0.03;
         sigmaf          1;
         s1              2;
+        dUds            yes;
         alphaK1         0.85034;
         alphaK2         1;
         alphaOmega1     0.5;
@@ -174,6 +177,8 @@ class gammaReThetatSST
         dimensionedScalar sigmaThetat_;
 
         dimensionedScalar s1_;
+
+        Switch dUds_;
 
         // standard k-omega-SST coefficients
     
