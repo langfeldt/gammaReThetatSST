@@ -580,6 +580,26 @@ gammaReThetatSST::gammaReThetatSST
             10.0
         )
     ),
+    kInf_
+    (
+        dimensioned<scalar>::lookupOrAddToDict
+        (
+            "kInf",
+            coeffDict_,
+            0.0,
+            sqr(dimLength/dimTime)
+        )
+    ),
+    omegaInf_
+    (
+        dimensioned<scalar>::lookupOrAddToDict
+        (
+            "omegaInf",
+            coeffDict_,
+            0.0,
+            dimless/dimTime
+        )
+    ),
 
     y_(mesh_),
 
@@ -788,6 +808,8 @@ bool gammaReThetatSST::read()
         betaStar_.readIfPresent(coeffDict());
         a1_.readIfPresent(coeffDict());
         c1_.readIfPresent(coeffDict());
+        kInf_.readIfPresent(coeffDict());
+        omegaInf_.readIfPresent(coeffDict());
 
         return true;
     }
@@ -838,6 +860,7 @@ void gammaReThetatSST::correct()
             (F1 - scalar(1))*CDkOmega/omega_,
             omega_
         )
+      + beta(F1)*sqr(omegaInf_)
     );
 
     omegaEqn().relax();
@@ -863,6 +886,7 @@ void gammaReThetatSST::correct()
      ==
         min(G, c1_*betaStar_*k_*omega_)*gammaEff
       - fvm::Sp(min(max(gammaEff,scalar(0.1)),scalar(1))*betaStar_*omega_, k_)
+      + betaStar_*omegaInf_*kInf_
     );
     
     kEqn().relax();

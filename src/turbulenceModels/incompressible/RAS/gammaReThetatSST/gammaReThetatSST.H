@@ -199,6 +199,11 @@ class gammaReThetatSST
         dimensionedScalar a1_;
         dimensionedScalar c1_;
 
+        // coefficients for k-omega-SST with controlled decay
+
+        dimensionedScalar kInf_;
+        dimensionedScalar omegaInf_;
+
 
         //- Wall distance field
         //  Note: different to wall distance in parent RASModel
