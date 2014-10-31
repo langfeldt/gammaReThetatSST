@@ -63,6 +63,8 @@ Description
 
 
     VERSION HISTORY:
+    2014-10-31 : - default value for dUds changed to "off"
+    2014-10-22 : - add control for decay of freestream turbulence
     2014-10-06 : - add switch for controlling the influence of a streamwise
                    pressure gradient on ReThetat
     2014-09-27 : - add inlet boundary condition for ReThetatTilda
@@ -95,7 +97,7 @@ Description
         cThetat         0.03;
         sigmaf          1;
         s1              2;
-        dUds            yes;
+        dUds            no;
         alphaK1         0.85034;
         alphaK2         1;
         alphaOmega1     0.5;

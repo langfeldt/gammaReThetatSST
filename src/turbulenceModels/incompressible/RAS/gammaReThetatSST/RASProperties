@@ -28,13 +28,14 @@ printCoeffs                     on;
 
 gammaReThetatSSTCoeffs
 {
-    dUds                        on;                 // Switch for activating
+    dUds                        off;                // Switch for activating
                                                     // the influence of
                                                     // streamwise pressure
                                                     // gradient. Some authors
                                                     // (e.g. Suluksna et al.)
                                                     // suggest switching this
-                                                    // influence off.
+                                                    // influence off by
+                                                    // default.
 
     kInf                        0.0;                // freestream values for
     omegaInf                    0.0;                // controlling the decay
