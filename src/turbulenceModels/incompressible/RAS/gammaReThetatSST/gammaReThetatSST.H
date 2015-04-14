@@ -61,8 +61,14 @@ Description
     for Airfoils and Rotors using the gamma-ReTheta Model", Wind Energy 12,
     pp. 715-733
 
+    M. TOMAC, K. PETTERSON, A. RIZZI (2013): "Calibration and Verification
+    of a gamma-ReThetat Transition Prediction Method for Airfoil
+    Computations", 51st AIAA Aerospace Sciences Meeting
+
 
     VERSION HISTORY:
+    2015-04-14 : - add ReThetac() and Flength() correlations of
+                   TOMAC et al. (2013)
     2014-10-31 : - default value for dUds changed to "off"
     2014-10-22 : - add control for decay of freestream turbulence
     2014-10-06 : - add switch for controlling the influence of a streamwise
@@ -153,12 +159,14 @@ class gammaReThetatSST
         static const word CORRN_SULUKSNA2009;
         static const word CORRN_MALAN2009;
         static const word CORRN_SORENSEN2009;
+        static const word CORRN_TOMAC2013;
 
         // Correlation IDs
         static const int CORR_MENTER2009;
         static const int CORR_SULUKSNA2009;
         static const int CORR_MALAN2009;
         static const int CORR_SORENSEN2009;
+        static const int CORR_TOMAC2013;
         
         // Selected Correlation ID        
         int corrID_;

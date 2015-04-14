@@ -54,12 +54,14 @@ const word gammaReThetatSST::CORRN_MENTER2009 = "LangtryMenter2009";
 const word gammaReThetatSST::CORRN_SULUKSNA2009 = "SuluksnaEtAl2009";
 const word gammaReThetatSST::CORRN_MALAN2009 = "MalanEtAl2009";
 const word gammaReThetatSST::CORRN_SORENSEN2009 = "Sorensen2009";
+const word gammaReThetatSST::CORRN_TOMAC2013 = "TomacEtAl2013";
 
 // Selectable correlation IDs
 const int gammaReThetatSST::CORR_MENTER2009 = 0;
 const int gammaReThetatSST::CORR_SULUKSNA2009 = 1;
 const int gammaReThetatSST::CORR_MALAN2009 = 2;
 const int gammaReThetatSST::CORR_SORENSEN2009 = 3;
+const int gammaReThetatSST::CORR_TOMAC2013 = 4;
 
 // * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
 
@@ -99,6 +101,12 @@ volScalarField gammaReThetatSST::Flength() const
                 scalar(150)*exp(scalar(-1)*pow(ReThetatTilda_/scalar(120),1.2))+scalar(0.1),
                 scalar(30)
             );
+            break;
+        case CORR_TOMAC2013: 
+            // CORRELATION: TOMAC et al. 2013
+            Flength = scalar(0.162)+scalar(93.3)*exp(scalar(-1)*sqr(ReThetatTilda_)/scalar(49153))+
+		    (scalar(50)/(scalar(260)*sqrt(scalar(6.283))))*exp(scalar(-0.5)*
+	            sqr((ReThetatTilda_-scalar(520))/scalar(260)));
             break;
         default:
             // CORRELATION: LANGTRY and MENTER 2009 
@@ -159,6 +167,15 @@ volScalarField gammaReThetatSST::ReThetac() const
                    (ReThetatTilda_+scalar(12000))/scalar(25)+
                    (scalar(1)-tanh(pow4((ReThetatTilda_-scalar(100))/scalar(400))))*
                    (scalar(7)*ReThetatTilda_+scalar(100))/scalar(10);
+            break;
+        case CORR_TOMAC2013: 
+            // CORRELATION: TOMAC et al. 2013
+            ReThetac = min(
+                scalar(0.993)*ReThetatTilda_,
+                scalar(0.322)*ReThetatTilda_+(scalar(105900)/(scalar(150)*sqrt(scalar(6.283))))*
+		    (exp(scalar(-0.5)*sqr((ReThetatTilda_-scalar(560))/scalar(150)))+
+		     exp(scalar(-0.5)*sqr((ReThetatTilda_-scalar(168))/scalar(150))))
+            );
             break;
         default:
             // CORRELATION: LANGTRY and MENTER 2009 
@@ -695,6 +712,10 @@ gammaReThetatSST::gammaReThetatSST
     else if (corrName == CORRN_SORENSEN2009) {
         corrID_ = CORR_SORENSEN2009;
         corrInfo = "Sorensen (2009)";
+    }
+    else if (corrName == CORRN_TOMAC2013) {
+        corrID_ = CORR_TOMAC2013;
+        corrInfo = "Tomac et al. (2013)";
     }
     else {
         corrID_ = CORR_MENTER2009;

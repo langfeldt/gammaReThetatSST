@@ -21,6 +21,7 @@ gammaReThetatSSTCorrelations    LangtryMenter2009;  // Allowed correlations:
                                                     //  - SuluksnaEtAl2009
                                                     //  - MalanEtAl2009
                                                     //  - Sorensen2009
+                                                    //  - TomacEtAl2013
 
 turbulence                      on;
 
