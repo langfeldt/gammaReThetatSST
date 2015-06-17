@@ -679,6 +679,201 @@ gammaReThetatSST::gammaReThetatSST
             IOobject::AUTO_WRITE
         ),
         autoCreateNut("nut", mesh_)
+    ),
+    convk_
+    (
+        IOobject
+        (
+            "convk",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", k_.dimensions()/dimTime, 0)
+    ),
+    diffk_
+    (
+        IOobject
+        (
+            "diffk",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", k_.dimensions()/dimTime, 0)
+    ),
+    Pk_
+    (
+        IOobject
+        (
+            "Pk",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", k_.dimensions()/dimTime, 0)
+    ),
+    Dk_
+    (
+        IOobject
+        (
+            "Dk",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", k_.dimensions()/dimTime, 0)
+    ),
+    convomega_
+    (
+        IOobject
+        (
+            "convomega",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", omega_.dimensions()/dimTime, 0)
+    ),
+    diffomega_
+    (
+        IOobject
+        (
+            "diffomega",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", omega_.dimensions()/dimTime, 0)
+    ),
+    Pomega_
+    (
+        IOobject
+        (
+            "Pomega",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", omega_.dimensions()/dimTime, 0)
+    ),
+    Domega_
+    (
+        IOobject
+        (
+            "Domega",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", omega_.dimensions()/dimTime, 0)
+    ),
+    convgamma_
+    (
+        IOobject
+        (
+            "convgamma",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", gamma_.dimensions()/dimTime, 0)
+    ),
+    diffgamma_
+    (
+        IOobject
+        (
+            "diffgamma",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", gamma_.dimensions()/dimTime, 0)
+    ),
+    Pgamma_
+    (
+        IOobject
+        (
+            "Pgamma",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", gamma_.dimensions()/dimTime, 0)
+    ),
+    Dgamma_
+    (
+        IOobject
+        (
+            "Dgamma",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", gamma_.dimensions()/dimTime, 0)
+    ),
+    convReThetatTilda_
+    (
+        IOobject
+        (
+            "convReThetatTilda",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", ReThetatTilda_.dimensions()/dimTime, 0)
+    ),
+    diffReThetatTilda_
+    (
+        IOobject
+        (
+            "diffReThetatTilda",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", ReThetatTilda_.dimensions()/dimTime, 0)
+    ),
+    PReThetatTilda_
+    (
+        IOobject
+        (
+            "PReThetatTilda",
+            runTime_.timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", ReThetatTilda_.dimensions()/dimTime, 0)
     )
 {
     // get correlations name, but do not register the dictionary
@@ -891,6 +1086,16 @@ void gammaReThetatSST::correct()
     solve(omegaEqn);
     bound(omega_, omegaMin_);
 
+    convomega_ = fvc::div(phi_, omega_);
+    diffomega_ = fvc::laplacian(DomegaEff(F1), omega_);
+    Pomega_ = gamma(F1)*min(2*S2, (c1_/a1_)*betaStar_*omega_*max(a1_*omega_, F2()*sqrt(scalar(2)*S2)))
+	      - fvc::SuSp
+                (
+                    (F1 - scalar(1))*CDkOmega/omega_,
+                    omega_
+                );
+    Domega_ = fvc::Sp(beta(F1)*omega_, omega_);
+
 
     volScalarField gammaEff = max
     (
@@ -914,6 +1119,10 @@ void gammaReThetatSST::correct()
     solve(kEqn);
     bound(k_, kMin_);
 
+    convk_ = fvc::div(phi_, k_);
+    diffk_ = fvc::laplacian(DkEff(F1), k_);
+    Pk_ = min(G, c1_*betaStar_*k_*omega_)*gammaEff;
+    Dk_ = fvc::Sp(min(max(gammaEff,scalar(0.1)),scalar(1))*betaStar_*omega_, k_);
 
     // Re-calculate viscosity
     nut_ = a1_*k_/max(a1_*omega_, F2()*sqrt(scalar(2)*S2));
@@ -973,6 +1182,11 @@ void gammaReThetatSST::correct()
     solve(ReThetatTildaEqn);
 
     bound(ReThetatTilda_,scalar(20));
+    
+    convReThetatTilda_ = fvc::div(phi_, ReThetatTilda_);
+    diffReThetatTilda_ = fvc::laplacian(DReThetatTildaEff(), ReThetatTilda_);
+    PReThetatTilda_ = cThetat_*magSqr(U_)*(scalar(1.0)-FThetat())*ReThetatField/(scalar(500.0)*nu())
+                      - fvc::Sp(cThetat_*magSqr(U_)*(scalar(1.0)-FThetat())/(scalar(500.0)*nu()), ReThetatTilda_);
   
 
     // Intermittency equation
@@ -1001,6 +1215,21 @@ void gammaReThetatSST::correct()
     solve(gammaEqn);
 
     bound(gamma_,scalar(0));
+
+    convgamma_ = fvc::div(phi_, gamma_);
+    diffgamma_ = fvc::laplacian(DgammaEff(), gamma_);
+    Pgamma_ = Flength()*ca1_*sqrt(scalar(2))*mag(symm(fvc::grad(U_)))*sqrt(Fonset()*gamma_)
+              - fvc::Sp
+                (
+                Flength()*ca1_*sqrt(scalar(2))*mag(symm(fvc::grad(U_)))*sqrt(Fonset()*gamma_)*ce1_,
+                gamma_
+                );
+    Dgamma_ = - ca2_*sqrt(scalar(2))*mag(skew(fvc::grad(U_)))*Fturb()*gamma_
+              + fvc::Sp
+              (
+                  ce2_*ca2_*sqrt(scalar(2))*mag(skew(fvc::grad(U_)))*Fturb()*gamma_,
+                  gamma_
+              );
 
 
 }

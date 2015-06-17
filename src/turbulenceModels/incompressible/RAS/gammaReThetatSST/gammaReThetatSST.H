@@ -227,6 +227,26 @@ class gammaReThetatSST
         volScalarField omega_;
         volScalarField nut_;
 
+	// Fields for the output of turbulence model budget
+	volScalarField convk_;
+	volScalarField diffk_;
+	volScalarField Pk_;
+	volScalarField Dk_;
+	
+	volScalarField convomega_;
+	volScalarField diffomega_;
+	volScalarField Pomega_;
+	volScalarField Domega_;
+	
+	volScalarField convgamma_;
+	volScalarField diffgamma_;
+	volScalarField Pgamma_;
+	volScalarField Dgamma_;
+	
+	volScalarField convReThetatTilda_;
+	volScalarField diffReThetatTilda_;
+	volScalarField PReThetatTilda_;
+
 
     // Private member functions
 
