@@ -67,7 +67,7 @@ const int gammaReThetatSST::CORR_TOMAC2013 = 4;
 
 volScalarField gammaReThetatSST::Flength() const
 {
-    volScalarField Flength 
+    volScalarField Flength
         (
             IOobject
             (
@@ -77,7 +77,7 @@ volScalarField gammaReThetatSST::Flength() const
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),
-            ReThetatTilda_ 
+            ReThetatTilda_
     );
 
     switch (corrID_) {
@@ -95,21 +95,21 @@ volScalarField gammaReThetatSST::Flength() const
                 scalar(300)
             );
             break;
-        case CORR_SORENSEN2009: 
+        case CORR_SORENSEN2009:
             // CORRELATION: SORENSEN 2009
             Flength = min(
                 scalar(150)*exp(scalar(-1)*pow(ReThetatTilda_/scalar(120),1.2))+scalar(0.1),
                 scalar(30)
             );
             break;
-        case CORR_TOMAC2013: 
+        case CORR_TOMAC2013:
             // CORRELATION: TOMAC et al. 2013
             Flength = scalar(0.162)+scalar(93.3)*exp(scalar(-1)*sqr(ReThetatTilda_)/scalar(49153))+
-		    (scalar(50)/(scalar(260)*sqrt(scalar(6.283))))*exp(scalar(-0.5)*
-	            sqr((ReThetatTilda_-scalar(520))/scalar(260)));
+                (scalar(50)/(scalar(260)*sqrt(scalar(6.283))))*exp(scalar(-0.5)*
+                                                                   sqr((ReThetatTilda_-scalar(520))/scalar(260)));
             break;
         default:
-            // CORRELATION: LANGTRY and MENTER 2009 
+            // CORRELATION: LANGTRY and MENTER 2009
             forAll(Flength, cellI)
             {
                 if(ReThetatTilda_[cellI] < scalar(400))
@@ -130,7 +130,7 @@ volScalarField gammaReThetatSST::Flength() const
 
 volScalarField gammaReThetatSST::ReThetac() const
 {
-    volScalarField ReThetac 
+    volScalarField ReThetac
         (
             IOobject
             (
@@ -140,7 +140,7 @@ volScalarField gammaReThetatSST::ReThetac() const
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),
-            ReThetatTilda_ 
+            ReThetatTilda_
     );
 
     switch (corrID_) {
@@ -161,14 +161,14 @@ volScalarField gammaReThetatSST::ReThetac() const
                 ReThetatTilda_
             );
             break;
-        case CORR_SORENSEN2009: 
+        case CORR_SORENSEN2009:
             // CORRELATION: SORENSEN 2009
             ReThetac = tanh(pow4((ReThetatTilda_-scalar(100))/scalar(400)))*
                    (ReThetatTilda_+scalar(12000))/scalar(25)+
                    (scalar(1)-tanh(pow4((ReThetatTilda_-scalar(100))/scalar(400))))*
                    (scalar(7)*ReThetatTilda_+scalar(100))/scalar(10);
             break;
-        case CORR_TOMAC2013: 
+        case CORR_TOMAC2013:
             // CORRELATION: TOMAC et al. 2013
             ReThetac = min(
                 scalar(0.993)*ReThetatTilda_,
@@ -178,7 +178,7 @@ volScalarField gammaReThetatSST::ReThetac() const
             );
             break;
         default:
-            // CORRELATION: LANGTRY and MENTER 2009 
+            // CORRELATION: LANGTRY and MENTER 2009
             forAll(ReThetac, cellI)
             {
                 if(ReThetatTilda_[cellI] > scalar(1870))
@@ -187,9 +187,9 @@ volScalarField gammaReThetatSST::ReThetac() const
                     ReThetac[cellI] = ReThetatTilda_[cellI]-(scalar(396.035e-2)-scalar(120.656e-4)*ReThetatTilda_[cellI]+scalar(868.230e-6)*sqr(ReThetatTilda_[cellI])-scalar(696.506e-9)*pow3(ReThetatTilda_[cellI])+scalar(174.105e-12)*pow4(ReThetatTilda_[cellI]));
             }
     }
-    
+
     return ReThetac;
-    
+
 }
 
 tmp<volScalarField> gammaReThetatSST::Fonset() const
@@ -237,14 +237,16 @@ tmp<volScalarField> gammaReThetatSST::Fwake() const
 
 tmp<volScalarField> gammaReThetatSST::FThetat() const
 {
-        volScalarField magVort = sqrt(scalar(2))*mag(skew(fvc::grad(U_)));
-        magVort = max(magVort,dimensionedScalar("smallOmega",magVort.dimensions(),SMALL));
+    volScalarField magVort(sqrt(scalar(2))*mag(skew(fvc::grad(U_))));
+    magVort = max(magVort,
+                  dimensionedScalar("smallOmega",magVort.dimensions(),SMALL));
     return min
     (
         max
         (
-            Fwake()*exp(-pow4(magSqr(U_)/(scalar(375.0)*nu()*magVort*ReThetatTilda_))),
-        scalar(1.0)-sqr((ce2_*gamma_-scalar(1.0))/(ce2_-scalar(1.0)))
+            Fwake()*exp(-pow4(magSqr(U_)
+                              /(scalar(375.0)*nu()*magVort*ReThetatTilda_))),
+            scalar(1.0)-sqr((ce2_*gamma_-scalar(1.0))/(ce2_-scalar(1.0)))
         ),
         scalar(1.0)
     );
@@ -257,7 +259,7 @@ tmp<volScalarField> gammaReThetatSST::FThetat() const
 void gammaReThetatSST::ReThetat(volScalarField& ReThetatField) const
 {
     scalar Tu, lambda, ReThetatOld, ReThetatNew, ReThetatTol, dUds, K;
-    volScalarField U2gradU = (sqr(U_)&&(fvc::grad(U_)));
+    volScalarField U2gradU(sqr(U_)&&(fvc::grad(U_)));
 
     forAll(ReThetatField, cellI)
     {
@@ -320,7 +322,7 @@ scalar gammaReThetatSST::ReThetatEq(scalar Tu, scalar lambda, scalar K) const
             FTu = scalar(803.73)*pow((Tu+scalar(0.6067)),scalar(-1.027));
             if(lambda > scalar(0)) {
                 scalar FK = scalar(0.0962e6)*K+scalar(0.148e12)*sqr(K)+scalar(0.0141e18)*pow3(K);
-                FlamK = scalar(1.0)+FK*(scalar(1.0)-exp(-Tu/scalar(1.5)))+scalar(0.556)*(scalar(1.0)-exp(-scalar(23.9)*lambda))*exp(-Tu/scalar(1.5)); 
+                FlamK = scalar(1.0)+FK*(scalar(1.0)-exp(-Tu/scalar(1.5)))+scalar(0.556)*(scalar(1.0)-exp(-scalar(23.9)*lambda))*exp(-Tu/scalar(1.5));
             }
             else {
                 scalar Flam = scalar(10.32)*lambda+scalar(89.47)*sqr(lambda)+265.51*pow3(lambda);
@@ -360,28 +362,34 @@ tmp<volScalarField> gammaReThetatSST::gammaSep() const
 
 tmp<volScalarField> gammaReThetatSST::F1(const volScalarField& CDkOmega) const
 {
-    volScalarField CDkOmegaPlus = max
+    volScalarField CDkOmegaPlus
     (
-        CDkOmega,
-        dimensionedScalar("1.0e-10", dimless/sqr(dimTime), 1.0e-10)
+        max
+        (
+            CDkOmega,
+            dimensionedScalar("1.0e-10", dimless/sqr(dimTime), 1.0e-10)
+        )
     );
 
-    volScalarField arg1 = min
+    volScalarField arg1
     (
         min
         (
-            max
+            min
             (
-                (scalar(1)/betaStar_)*sqrt(k_)/(omega_*y_),
-                scalar(500)*nu()/(sqr(y_)*omega_)
+                max
+                (
+                    (scalar(1)/betaStar_)*sqrt(k_)/(omega_*y_),
+                    scalar(500)*nu()/(sqr(y_)*omega_)
+                ),
+                (4*alphaOmega2_)*k_/(CDkOmegaPlus*sqr(y_))
             ),
-            (4*alphaOmega2_)*k_/(CDkOmegaPlus*sqr(y_))
-        ),
-        scalar(10)
+            scalar(10)
+        )
     );
 
     // Modified blending function!
-    return 
+    return
     max(
         tanh(pow4(arg1)),
     exp(-sqr(pow4(y_*sqrt(k_)/(scalar(120)*nu()))))
@@ -390,14 +398,17 @@ tmp<volScalarField> gammaReThetatSST::F1(const volScalarField& CDkOmega) const
 
 tmp<volScalarField> gammaReThetatSST::F2() const
 {
-    volScalarField arg2 = min
+    volScalarField arg2
     (
-        max
+        min
         (
-            (scalar(2)/betaStar_)*sqrt(k_)/(omega_*y_),
-            scalar(500)*nu()/(sqr(y_)*omega_)
-        ),
-        scalar(100)
+            max
+            (
+                (scalar(2)/betaStar_)*sqrt(k_)/(omega_*y_),
+                scalar(500)*nu()/(sqr(y_)*omega_)
+            ),
+            scalar(100)
+        )
     );
 
     return tanh(sqr(arg2));
@@ -855,16 +866,18 @@ void gammaReThetatSST::correct()
         y_.correct();
     }
 
-    volScalarField S2 = magSqr(symm(fvc::grad(U_)));
+    volScalarField S2(magSqr(symm(fvc::grad(U_))));
     volScalarField G(GName(), nut_*2*S2);
 
     // Update omega and G at the wall
     omega_.boundaryField().updateCoeffs();
 
-    volScalarField CDkOmega =
-        (2*alphaOmega2_)*(fvc::grad(k_) & fvc::grad(omega_))/omega_;
+    volScalarField CDkOmega
+    (
+        (2*alphaOmega2_)*(fvc::grad(k_) & fvc::grad(omega_))/omega_
+    );
 
-    volScalarField F1 = this->F1(CDkOmega);
+    volScalarField F1(this->F1(CDkOmega));
 
     // Turbulent frequency equation
     tmp<fvScalarMatrix> omegaEqn
@@ -892,10 +905,13 @@ void gammaReThetatSST::correct()
     bound(omega_, omegaMin_);
 
 
-    volScalarField gammaEff = max
+    volScalarField gammaEff
     (
-        gamma_,
-        gammaSep()
+        max
+        (
+            gamma_,
+            gammaSep()
+        )
     );
 
     // Turbulent kinetic energy equation
@@ -909,7 +925,7 @@ void gammaReThetatSST::correct()
       - fvm::Sp(min(max(gammaEff,scalar(0.1)),scalar(1))*betaStar_*omega_, k_)
       + betaStar_*omegaInf_*kInf_
     );
-    
+
     kEqn().relax();
     solve(kEqn);
     bound(k_, kMin_);
@@ -934,7 +950,7 @@ void gammaReThetatSST::correct()
         ReThetatTilda_
     );
     ReThetat(ReThetatField);
-    
+
     // OUTPUT FUNCTIONS
     if(runTime_.outputTime())
     {
@@ -955,7 +971,7 @@ void gammaReThetatSST::correct()
 //      mag(symm(fvc::grad(U_)))().write();
 //      CDkOmega.write();
 //      Fturb()().write();
-//      F1.write();     
+//      F1.write();
     }
 
     // Transition onset momentum thickness Reynolds number equation
@@ -973,10 +989,10 @@ void gammaReThetatSST::correct()
     solve(ReThetatTildaEqn);
 
     bound(ReThetatTilda_,scalar(20));
-  
+
 
     // Intermittency equation
-    
+
     tmp<fvScalarMatrix> gammaEqn
     (
         fvm::ddt(gamma_)
