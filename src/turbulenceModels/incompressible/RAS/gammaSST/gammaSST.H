@@ -22,15 +22,16 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::incompressible::RASModels::gammaReThetatSST
+    Foam::incompressible::RASModels::gammaSST
 
 Description
-    Implementation of the gamma-ReTheta turbulence model for predicting
+    Implementation of the gamma-SST turbulence model for predicting
     laminar-turbulent transition on arbitrary geometries and grid topo-
     logies.
 
-    The implementation corresponds to the version number CFX-v-1.1 of the
-    turbulence model.
+    The implementation corresponds to the paper  F.R. MENTER et al. (2015):
+    "A One-equation Local Correlation-Based Transition Model", Flow,
+    Turbulence and Combustion 95(4), pp. 583-619.
 
     WARNING:
     This implementation is complete and ready to use, but it is not fully
@@ -41,93 +42,56 @@ Description
     Please contact me if you find any bugs or errors, I will be grateful to
     further improve this turbulence model: felix.langfeldt@gmail.com
 
-    For information about how to use the turbulence model, what boundary
-    conditions to apply etc. please refer to the following literature:
-
-    R.B. LANGTRY and F.R. MENTER (2009): "Correlation-Based Transition
-    Modeling for Unstructured Parallelized Computational Fluid Dynamic
-    Codes", AIIA Journal 47 (12), pp. 2894-2906
-
-    K. SULUKSNA, P. DECHAUMPHAI, E. JUNTASARO (2009): "Correlations for
-    modeling transitional boundary layers under influences of freestream
-    turbulence and pressure gradient", Intl. Journal of Heat and Fluid Flow
-    30, pp. 66-75
-
-    P. MALAN, K. SULUKSNA, E. JUNTASARO (2009): "Calibrating the gamma-
-    ReTheta Transition Model for Commercial CFD", 47th AIAA Aerospace
-    Sciences Meeting
-
-    N.N. SORENSEN (2009): "CFD Modelling of Laminar-turbulent Transition
-    for Airfoils and Rotors using the gamma-ReTheta Model", Wind Energy 12,
-    pp. 715-733
-
-    M. TOMAC, K. PETTERSON, A. RIZZI (2013): "Calibration and Verification
-    of a gamma-ReThetat Transition Prediction Method for Airfoil
-    Computations", 51st AIAA Aerospace Sciences Meeting
-
 
     VERSION HISTORY:
-    2015-04-14 : - add ReThetac() and Flength() correlations of
-                   TOMAC et al. (2013)
-    2014-10-31 : - default value for dUds changed to "off"
-    2014-10-22 : - add control for decay of freestream turbulence
-    2014-10-06 : - add switch for controlling the influence of a streamwise
-                   pressure gradient on ReThetat
-    2014-09-27 : - add inlet boundary condition for ReThetatTilda
-    2014-09-22 : - add correlation selection in RASProperties dictionary
-    2014-09-19 : - corrected typo in correlation by MALAN et al. (2009)
-    2014-09-17 : - made equations consistent with SST model in OpenFOAM 2.3.x
-    2014-09-12 : - coding style updates
-                 - ensured compatibility with OpenFOAM 2.3.x (thanks Artur)
-                 - corrected correlations of SULUKSNA et al. (2009) and
-                   MALAN et al. (2009) (thanks Mazharul)
-    2011-09-06 : - ensured compatibility with OpenFOAM 2.0.x
-    2011-03-10 : - added ReThetac() and Flength() correlations of
-                   SORENSEN (2009)
-    2011-02-28 : - added missing max() in the return statement of the
-                   F1 blending function
-                 - reverted ReThetac() to use original correlation of
-                   LANGTRY and MENTER
-    2011-02-24 : - first public release
+    2016-02-04 : - first public release
 
 
     The default model coefficients correspond to the following:
     @verbatim
-        gammaReThetatSSTCoeffs
-        {
-        sigmaThetat     2;
-        ca1             2;
-        ce1             1;
-        ca2             0.06;
-        ce2             50;
-        cThetat         0.03;
-        sigmaf          1;
-        s1              2;
-        dUds            no;
-        alphaK1         0.85034;
-        alphaK2         1;
-        alphaOmega1     0.5;
-        alphaOmega2     0.85616;
-        gamma1          0.5532;
-        gamma2          0.4403;
-        beta1           0.075;
-        beta2           0.0828;
-        betaStar        0.09;
-        a1              0.31;
-        c1              10;
-        }
+	gammaSSTCoeffs
+	{
+	    Flength         100;
+	    ca2             0.06;
+	    ce2             50;
+	    sigmaf          1;
+	    CTU1            100;
+	    CTU2            1000;
+	    CTU3            1;
+	    CPG1            14.68;
+	    CPG2            -7.34;
+	    CPG3            0;
+	    CPG1lim         1.5;
+	    CPG2lim         3;
+	    Ck              1;
+	    CSEP            1;
+	    alphaK1         0.85034;
+	    alphaK2         1;
+	    alphaOmega1     0.5;
+	    alphaOmega2     0.85616;
+	    gamma1          0.5532;
+	    gamma2          0.4403;
+	    beta1           0.075;
+	    beta2           0.0828;
+	    betaStar        0.09;
+	    a1              0.31;
+	    c1              10;
+	    kInf            0;
+	    omegaInf        0;
+	}
     @endverbatim
 
 SourceFiles
-    gammaReThetatSST.C
+    gammaSST.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef gammaReThetatSST_H
-#define gammaReThetatSST_H
+#ifndef gammaSST_H
+#define gammaSST_H
 
 #include "RASModel.H"
 #include "wallDist.H"
+#include "reflectionVectors.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -139,56 +103,38 @@ namespace RASModels
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class gammaReThetatSST Declaration
+                           Class gammaSST Declaration
 \*---------------------------------------------------------------------------*/
 
-class gammaReThetatSST
+class gammaSST
 :
     public RASModel
 {
     // Private data
-    
-        // Convergence tolerance for calculating ReThetat
-        // (not ReThetatTilda!!)
-        static const scalar tol_;
-        // Maximum iterations
-        static const int maxIter_;
-
-        // Correlation names
-        static const word CORRN_MENTER2009;
-        static const word CORRN_SULUKSNA2009;
-        static const word CORRN_MALAN2009;
-        static const word CORRN_SORENSEN2009;
-        static const word CORRN_TOMAC2013;
-
-        // Correlation IDs
-        static const int CORR_MENTER2009;
-        static const int CORR_SULUKSNA2009;
-        static const int CORR_MALAN2009;
-        static const int CORR_SORENSEN2009;
-        static const int CORR_TOMAC2013;
-        
-        // Selected Correlation ID        
-        int corrID_;
 
         // Model coefficients
     
         // gamma-ReThetat-model coefficients
-    
-        dimensionedScalar ca1_;
-        dimensionedScalar ce1_;
+
+        dimensionedScalar Flength_;
 
         dimensionedScalar ca2_;
         dimensionedScalar ce2_;
 
-        dimensionedScalar cThetat_;
-
         dimensionedScalar sigmaf_;
-        dimensionedScalar sigmaThetat_;
+        
+	dimensionedScalar CTU1_;
+	dimensionedScalar CTU2_;
+	dimensionedScalar CTU3_;
+        
+	dimensionedScalar CPG1_;
+	dimensionedScalar CPG2_;
+	dimensionedScalar CPG3_;
+	dimensionedScalar CPG1lim_;
+	dimensionedScalar CPG2lim_;
 
-        dimensionedScalar s1_;
-
-        Switch dUds_;
+	dimensionedScalar Ck_;
+	dimensionedScalar CSEP_;
 
         // standard k-omega-SST coefficients
     
@@ -218,11 +164,11 @@ class gammaReThetatSST
         //- Wall distance field
         //  Note: different to wall distance in parent RASModel
         wallDist y_;
+	reflectionVectors yr_;
 
         // Fields
 
         volScalarField gamma_;
-        volScalarField ReThetatTilda_;
         volScalarField k_;
         volScalarField omega_;
         volScalarField nut_;
@@ -232,7 +178,6 @@ class gammaReThetatSST
 
         // Empirical correlations
     
-        volScalarField Flength() const;
         volScalarField ReThetac() const;
 
         // Model functions of gamma-ReThetat-model
@@ -240,17 +185,8 @@ class gammaReThetatSST
         tmp<volScalarField> Fonset() const;
         tmp<volScalarField> Fonset1() const;
         tmp<volScalarField> Fturb() const;
-        tmp<volScalarField> Freattach() const;
-        tmp<volScalarField> Fwake() const;
-        tmp<volScalarField> FThetat() const;
 
-        // Empirical Functions for calculating the local transition onset
-        // momentum thickness Reynolds number
-        void ReThetat(volScalarField& ReThetatField) const;
-        scalar ReThetatEq(scalar Tu, scalar lambda, scalar K) const;
-
-        // Intermittency modification for separation-induced transition
-        tmp<volScalarField> gammaSep() const;
+        tmp<volScalarField> PkLim() const;
 
 
         tmp<volScalarField> F1(const volScalarField& CDkOmega) const;
@@ -302,13 +238,13 @@ class gammaReThetatSST
 public:
 
     //- Runtime type information
-    TypeName("gammaReThetatSST");
+    TypeName("gammaSST");
 
 
     // Constructors
 
         //- Construct from components
-        gammaReThetatSST
+        gammaSST
         (
             const volVectorField& U,
             const surfaceScalarField& phi,
@@ -319,7 +255,7 @@ public:
 
 
     //- Destructor
-    virtual ~gammaReThetatSST()
+    virtual ~gammaSST()
     {}
 
 
@@ -337,15 +273,6 @@ public:
             return tmp<volScalarField>
             (
                 new volScalarField("DgammaEff", (nut_/sigmaf_) + nu())
-            );
-        }
-
-        //- Return the effective diffusivity for ReThetatTilda
-        tmp<volScalarField> DReThetatTildaEff() const
-        {
-            return tmp<volScalarField>
-            (
-                new volScalarField("DReThetatTildaEff", sigmaThetat_*(nut_ + nu()))
             );
         }
 
@@ -371,12 +298,6 @@ public:
         virtual tmp<volScalarField> gamma() const
         {
             return gamma_;
-        }
-
-        //- Return the local transition momentum thickness Reynolds number
-        virtual tmp<volScalarField> ReThetatTilda() const
-        {
-            return ReThetatTilda_;
         }
 
         //- Return the turbulence kinetic energy
@@ -418,9 +339,6 @@ public:
                 new volScalarField("Rt", k_/(nu()*omega_)) // LANGTRY's definition
             );
         }
-
-        //- Return inlet values for ReThetatTilda
-        virtual scalar ReThetatTildaInlet(scalar Tu) const;
 
         //- Return the Reynolds stress tensor
         virtual tmp<volSymmTensorField> R() const;

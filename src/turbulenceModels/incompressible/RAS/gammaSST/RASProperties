@@ -15,29 +15,14 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-RASModel                        gammaReThetatSST;
-gammaReThetatSSTCorrelations    LangtryMenter2009;  // Allowed correlations:
-                                                    //  - LangtryMenter2009
-                                                    //  - SuluksnaEtAl2009
-                                                    //  - MalanEtAl2009
-                                                    //  - Sorensen2009
-                                                    //  - TomacEtAl2013
+RASModel                        gammaSST;
 
 turbulence                      on;
 
 printCoeffs                     on;
 
-gammaReThetatSSTCoeffs
+gammaSSTCoeffs
 {
-    dUds                        off;                // Switch for activating
-                                                    // the influence of
-                                                    // streamwise pressure
-                                                    // gradient. Some authors
-                                                    // (e.g. Suluksna et al.)
-                                                    // suggest switching this
-                                                    // influence off by
-                                                    // default.
-
     kInf                        0.0;                // freestream values for
     omegaInf                    0.0;                // controlling the decay
                                                     // of the turbulent
